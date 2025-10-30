@@ -12,9 +12,6 @@ const userSchema =new Schema({
       type: String,
   required: true,
   unique: true,
-},isEmailVerified:{
-    type: Boolean,
-    default: false,
 }, profilePhoto:{
     type: String,
     default: 'defaultProfilePhoto.jpg',

@@ -1,4 +1,3 @@
-
 const express=require("express");
 const methodOverride=require("method-override");
 const app= express();
@@ -32,12 +31,15 @@ try{
 const user = await User.findOne({ username });
 if (!user) return res.status(401).send('Invalid username or password');
 
-const isValid = await user.isValidPassword(password);
-if (!isValid) return res.status(401).send('Invalid username or password');
-
-
+// const isValid = await user.isValidPassword(password);
+// if (!isValid) return res.status(401).send('Invalid username or password');
+ const hashedPassword = await bcrypt.hash(password, 10);
+bcrypt.compare(password,hashedPassword);{
 
 res.send("login successful");
+}
+
+
 }catch(error){
 console.error(error);
 res.status(500).send("login failed");
