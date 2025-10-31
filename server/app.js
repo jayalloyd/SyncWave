@@ -1,10 +1,14 @@
+if (process.env.NODE_ENV !== "production") {
+    require('dotenv').config();
+}
+
 const express=require("express");
 const methodOverride=require("method-override");
 const app= express();
 const bcrypt=require("bcrypt");
 const mongoose=require("mongoose"); 
 const cors=require("cors");
-const userRoutes=require("./routes/user");
+const userRouter=require("./routes/user");
 const path = require("path");
 const User=require('./models/user.js');
 app.use(express.static(path.join(__dirname,"public")));
@@ -13,6 +17,9 @@ app.use(express.
 app.use(express.json());
 app.use(methodOverride("_method"));
 const passport=require("passport");
+const session = require('express-session');
+const LocalStrategy = require('passport-local'); // Import LocalStrategy
+
 
 main().then(() => { console.log("connection successful"); }).catch(err => console.log(err));
 
@@ -20,57 +27,64 @@ main().then(() => { console.log("connection successful"); }).catch(err => consol
 async function main() {
   await mongoose.connect('mongodb://127.0.0.1:27017/SyncWave');
 }
+const sessionOptions = {
+secret: process.env.SESSION_SECRET,    
+resave: false,
+    saveUninitialized: true,
+  
+};
+
+app.use(session(sessionOptions)); 
+
+
+
+app.use(session(sessionOptions)); 
+app.use(passport.initialize());  
+app.use(passport.session());
+
+
+passport.use(new LocalStrategy(async (username, password, done) => {
+    const user = await User.findOne({ username: username });
+    return done(null, user); 
+}));
+
+passport.serializeUser((user, done) => {
+    done(null, user.id); 
+});
+
+
+passport.deserializeUser(async (id, done) => {
+    try {
+        const user = await User.findById(id);
+        done(null, user);
+    } catch (err) {
+        done(err, null);
+    }
+});
+
+
+app.use('/users', userRouter);
+
+
+app.get("/login-success", (req, res) => {
+    // Check if the user is authenticated before showing the success page
+    if (req.isAuthenticated()) {
+        res.send(`<h1>Welcome, ${req.user.username}! Login Successful.</h1><p>User ID: ${req.user.id}</p>`);
+    } else {
+       
+        res.redirect("/login"); 
+    }
+});
+
+
+app.get("/login-failure", (req, res) => {
+    
+    res.send("<h1>Login Failed</h1><p>Incorrect username or password.</p><a href='/login'>Try Again</a>");
+});
 app.get("/",(req,res)=>{
     res.send("hello world");
 });
-app.post("/login",async(req,res)=>{
-let {username,password}=req.body;
-console.log("Login POST route hit. User attempting to log in:", req.body.username);
-try{
 
-const user = await User.findOne({ username });
-if (!user) return res.status(401).send('Invalid username or password');
-
-// const isValid = await user.isValidPassword(password);
-// if (!isValid) return res.status(401).send('Invalid username or password');
- const hashedPassword = await bcrypt.hash(password, 10);
-bcrypt.compare(password,hashedPassword);{
-
-res.send("login successful");
-}
-
-
-}catch(error){
-console.error(error);
-res.status(500).send("login failed");
-}
-
-
-});
-app.post("/signup", async (req, res) => {
-  // Extract variables from the request body first
-  const { username, password, email } = req.body;
-
-  console.log("New user signup attempt:");
-  console.log("Username:", username);
-  console.log("Email:", email);
-  console.log("Password:", password);
-
-  // Create new user object using User model/schema
-  const newUser = new User({ email, username, password });
-
-  try {
-    // Assuming Mongoose, use 'save()' to insert into DB
-    const registeredUser = await newUser.save();
-    console.log(registeredUser);
-
-    res.send("Signup successful");
-  } catch (error) {
-    // Send error response in case of failure
-    console.error(error);
-    res.status(500).send("Error during signup");
-  }
-});
 
 app.listen(8080,()=>{
     console.log("server is listening to port 8080");

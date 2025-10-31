@@ -23,10 +23,10 @@ export const AuthProvider = ({ children }) => {
 
     const handleRegister = async (name, username, password) => {
         try {
-            let request = await client.post("/register", {
+            let request = await client.post("/signup", {
                 name: name,
                 username: username,
-                password: password
+                password: password,
             })
 
 
