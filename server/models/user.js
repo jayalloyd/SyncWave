@@ -12,10 +12,7 @@ const userSchema =new Schema({
       type: String,
   required: true,
   unique: true,
-}, profilePhoto:{
-    type: String,
-    default: 'defaultProfilePhoto.jpg',
-},
+}, 
 createdAt:{
     type: Date,
     default: Date.now,

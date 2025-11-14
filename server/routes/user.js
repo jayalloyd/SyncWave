@@ -1,9 +1,11 @@
 const express = require("express");
-const router = express.Router();
+import { Router } from "express";
+const router = Router();
 const passport = require("passport");
-const User = require("../models/user.js");
-const userController=require("../controllers/userController.js");
-const local = require('passport-local');
+const userController = require("../controllers/userController.js"); 
+
+
+
 
 //login
 
@@ -15,6 +17,12 @@ router.route("/login")
 //signup
 
 router.route("/signup")
-   
- .post(userController.signup);// POST route to handle form submission
+   .post(userController.signup);// POST route to handle form submission
   module.exports=router;
+
+
+  router.route("/add_to_activity");
+
+router.route("/get+all_activity");
+
+export default router;

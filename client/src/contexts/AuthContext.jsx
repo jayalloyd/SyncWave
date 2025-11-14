@@ -7,7 +7,7 @@ import server from "../environment.js";
 export const AuthContext = createContext({});
 
 const client = axios.create({
-    baseURL: `${server}/api/v1/users`
+    baseURL: `${server}/users`
 })
 
 
@@ -48,10 +48,10 @@ export const AuthProvider = ({ children }) => {
             console.log(username, password)
             console.log(request.data)
 
-            if (request.status === httpStatus.OK) {
-                localStorage.setItem("token", request.data.token);
-                router("/home")
-            }
+            // if (request.status === httpStatus.OK) {
+            //     localStorage.setItem("token", request.data.token);
+            //     router("/home")
+            // }
         } catch (err) {
             throw err;
         }
