@@ -1,5 +1,7 @@
-const User = require("../models/user.js");
-const express = require("express");
+import User from '../models/userModel.js';
+
+import status from 'http-status-codes';
+import bcrypt from 'bcrypt';
 //signup
 module.exports.signup=async(req,res)=>{
 // Extract variables from the request body first
@@ -11,18 +13,27 @@ module.exports.signup=async(req,res)=>{
   console.log("Password:", password);
 
   // Create new user object using User model/schema
-  const newUser = new User({ email, username, password });
+ 
 
   try {
-    // Assuming Mongoose, use 'save()' to insert into DB
-    const registeredUser = await newUser.save();
-    console.log(registeredUser);
+  
+    const existingUser= await User.findOne({username});
+      console.log(existingUser);
 
-    res.send("Signup successful");
+      if(existingUser){
+               return res.status(status.FOUND).json({message:"user already exists"});
+      }
+
+    else{
+        const newUser = new User({ email, username, password });
+        const hashedPassword=await bcrypt.hash(password,10);
+        await newUser.save();
+        return res.status(status.CREATED).json({messahe:"new user created"});
+    }
   } catch (error) {
     // Send error response in case of failure
     console.error(error);
-    res.status(500).json("Error during signup");
+    res.status(500).json(`Error ${error} during signup `);
   }
 
 }
